@@ -71,7 +71,7 @@ The easiest way to run the application is using Docker Compose, which will set u
    docker-compose down
    ```
 
-5. To stop the application and remove all data (including the MongoDB volume):
+5. To stop the application and remove all data (including the MongoDB volumes):
    ```bash
    docker-compose down -v
    ```
