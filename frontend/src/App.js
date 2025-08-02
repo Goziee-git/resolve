@@ -48,7 +48,10 @@ function App() {
 
   return (
     <div className="app">
-      <h1>MERN Calculator</h1>
+      <div className="app-header">
+        <img src="/logo.svg" alt="Resolve Logo" className="app-logo" />
+        <h1>RESOLVE</h1>
+      </div>
       <Calculator onCalculate={performCalculation} />
       {error && <p className="error">{error}</p>}
       <CalculationHistory calculations={calculations} loading={loading} />
