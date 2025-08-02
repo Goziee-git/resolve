@@ -90,7 +90,7 @@ If you prefer to run the application without Docker, follow these steps:
 
 3. Install dependencies:
    ```bash
-   npm install
+   npm install --ignore-script
    ```
 
 4. Create a `.env` file with the following content:
@@ -118,7 +118,7 @@ If you prefer to run the application without Docker, follow these steps:
 
 2. Install dependencies:
    ```bash
-   npm install
+   npm install --ignore-script
    ```
 
 3. Start the frontend development server:
@@ -169,7 +169,7 @@ The `docker-compose.yml` file defines three services:
 FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --ignore-script
 COPY . .
 EXPOSE 5000
 CMD ["npm", "start"]
@@ -181,7 +181,7 @@ CMD ["npm", "start"]
 FROM node:18-alpine as build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --ignore-script
 COPY . .
 RUN npm run build
 
