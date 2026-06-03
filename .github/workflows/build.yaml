@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - develop
+      - docker-lessons
   pull_request:
     branches:
       - main
       - develop
+      - docker-lessons
 
 jobs:
   static-analysis:
