@@ -64,6 +64,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: false
+          load: true
           tags: calculator-backend:v1.0.0
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -74,6 +75,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: false
+          load: true
           tags: calculator-frontend:v1.0.0
           cache-from: type=gha
           cache-to: type=gha,mode=max
