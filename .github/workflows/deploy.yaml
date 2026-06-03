@@ -1,0 +1,70 @@
+name: Deploy to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  BACKEND_REPOSITORY: calculator-backend
+  FRONTEND_REPOSITORY: calculator-frontend
+
+jobs:
+  deploy-to-ecr:
+    name: Deploy Docker Images to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image deployment summary
+        run: |
+          echo "✅ Backend image pushed to: ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:latest"
+          echo "✅ Backend image tagged with commit: ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}"
+          echo "✅ Frontend image pushed to: ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:latest"
+          echo "✅ Frontend image tagged with commit: ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}"
+

@@ -1,28 +1,15 @@
 version: '3.8'
 
 services:
-  # MongoDB service
-  mongodb:
-    image: mongo:latest
-    container_name: calculator-mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - calculator-network
-
-  # Backend service
+  # Backend service (uses MongoDB Atlas - no local MongoDB needed)
   backend:
     build: ./backend
     container_name: calculator-backend
     restart: always
     ports:
       - "5000:5000"
-    depends_on:
-      - mongodb
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017/calculator
+      - MONGODB_URI=${MONGODB_URI}
       - PORT=5000
     networks:
       - calculator-network
@@ -42,6 +29,3 @@ services:
 networks:
   calculator-network:
     driver: bridge
-
-volumes:
-  mongodb_data:

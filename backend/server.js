@@ -22,12 +22,9 @@ app.get('/', (req, res) => {
   res.send('Calculator API is running');
 });
 
-// Connect to MongoDB and start server
+// Connect to MongoDB Atlas and start server
 mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://mongodb:27017/calculator', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => {
