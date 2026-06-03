@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: |
+            backend/package.json
+            frontend/package.json
 
       - name: Install backend dependencies
         working-directory: backend
