@@ -66,5 +66,5 @@ jobs:
       - name: Deployment summary
         run: |
           echo "## Images deployed to AWS ECR" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: \`${{ steps.login-ecr.outputs.registry }}/calculator-backend:latest\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend: \`${{ steps.login-ecr.outputs.registry }}/calculator-frontend:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: \`${{ steps.login-ecr.outputs.registry }}/calculator/backend:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: \`${{ steps.login-ecr.outputs.registry }}/calculator/frontend:latest\`" >> $GITHUB_STEP_SUMMARY
