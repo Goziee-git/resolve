@@ -12,8 +12,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/calculator-backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/calculator-frontend
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner | lower }}/calculator-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner | lower }}/calculator-frontend
 
 jobs:
   build-and-push-ghcr:
