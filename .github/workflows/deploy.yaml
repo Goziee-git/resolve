@@ -50,8 +50,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: calculator-backend
         run: |
-          docker pull ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator-backend:latest
-          docker tag ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator-backend:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          docker pull ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator/backend:latest
+          docker tag ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator/backend:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Pull frontend image from GHCR and push to AWS ECR
@@ -59,8 +59,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: calculator-frontend
         run: |
-          docker pull ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator-frontend:latest
-          docker tag ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator-frontend:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          docker pull ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator/frontend:latest
+          docker tag ${{ env.GHCR_REGISTRY }}/${{ steps.lowercase-owner.outputs.OWNER }}/calculator/frontend:latest ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
 
       - name: Deployment summary
