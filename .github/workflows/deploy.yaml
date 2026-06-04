@@ -49,7 +49,7 @@ jobs:
 
       - name: Pull backend image from GHCR
         run: |
-          docker pull ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner | downcasae }}/calculator-backend:latest
+          docker pull ${{ env.GHCR_REGISTRY }}/$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/calculator-backend:latest
 
       - name: Tag and push backend image to ECR
         run: |
@@ -61,7 +61,7 @@ jobs:
 
       - name: Pull frontend image from GHCR
         run: |
-          docker pull ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner downcase }}/calculator-frontend:latest
+          docker pull ${{ env.GHCR_REGISTRY }}/$( echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/calculator-frontend:latest
 
       - name: Tag and push frontend image to ECR
         run: |
