@@ -1,7 +1,10 @@
 name: Deploy to AWS ECR
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Build and Push to GHCR"]
+    types:
+      - completed
     branches:
       - docker-lessons
   workflow_dispatch:
@@ -9,9 +12,11 @@ on:
 permissions:
   id-token: write
   contents: read
+  packages: read
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  GHCR_REGISTRY: ghcr.io
   BACKEND_REPOSITORY: calculator/backend
   FRONTEND_REPOSITORY: calculator/frontend
 
@@ -19,11 +24,9 @@ jobs:
   deploy-to-ecr:
     name: Deploy Docker Images to ECR
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -34,37 +37,46 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push backend image to ECR
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:latest
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push frontend image to ECR
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:latest
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Image deployment summary
+      - name: Pull backend image from GHCR
         run: |
-          echo "✅ Backend image pushed to: ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:latest"
-          echo "✅ Backend image tagged with commit: ${{ steps.login-ecr.outputs.registry }}/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}"
-          echo "✅ Frontend image pushed to: ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:latest"
-          echo "✅ Frontend image tagged with commit: ${{ steps.login-ecr.outputs.registry }}/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}"
+          docker pull ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/calculator-backend:latest
+
+      - name: Tag and push backend image to ECR
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          docker tag ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/calculator-backend:latest $ECR_REGISTRY/${{ env.BACKEND_REPOSITORY }}:latest
+          docker tag ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/calculator-backend:latest $ECR_REGISTRY/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}
+          docker push $ECR_REGISTRY/${{ env.BACKEND_REPOSITORY }}:latest
+          docker push $ECR_REGISTRY/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}
+
+      - name: Pull frontend image from GHCR
+        run: |
+          docker pull ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/calculator-frontend:latest
+
+      - name: Tag and push frontend image to ECR
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          docker tag ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/calculator-frontend:latest $ECR_REGISTRY/${{ env.FRONTEND_REPOSITORY }}:latest
+          docker tag ${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/calculator-frontend:latest $ECR_REGISTRY/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}
+          docker push $ECR_REGISTRY/${{ env.FRONTEND_REPOSITORY }}:latest
+          docker push $ECR_REGISTRY/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deployment summary
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          echo "## Images deployed to ECR" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: \`${ECR_REGISTRY}/${{ env.BACKEND_REPOSITORY }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend (commit): \`${ECR_REGISTRY}/${{ env.BACKEND_REPOSITORY }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: \`${ECR_REGISTRY}/${{ env.FRONTEND_REPOSITORY }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend (commit): \`${ECR_REGISTRY}/${{ env.FRONTEND_REPOSITORY }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
 
