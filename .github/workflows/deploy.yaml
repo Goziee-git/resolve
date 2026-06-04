@@ -12,8 +12,8 @@ permissions:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  BACKEND_REPOSITORY: calculator-backend
-  FRONTEND_REPOSITORY: calculator-frontend
+  BACKEND_REPOSITORY: calculator/backend
+  FRONTEND_REPOSITORY: calculator/frontend
 
 jobs:
   deploy-to-ecr:
